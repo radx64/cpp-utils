@@ -170,7 +170,7 @@ struct IsAnyImpl;
 template <int ToMatch, int Head, int ... Tail>
 struct IsAnyImpl<ToMatch, Head, Tail...>
 {
-    static constexpr bool value = Head == ToMatch | IsAnyImpl<ToMatch, Tail...>::value;
+    static constexpr bool value = (Head == ToMatch) | IsAnyImpl<ToMatch, Tail...>::value;
 };
 
 template <int ToMatch, int Single>
