@@ -18,6 +18,18 @@ struct PushBack<IntList<Nums...>, Number>
 
 static_assert(std::is_same<IntList<1,2>, PushBack<IntList<1>, 2>::type>::value);
 
+template <class V, int Number>
+struct PushFront
+{};
+
+template<int ... Nums, int Number>
+struct PushFront<IntList<Nums...>, Number>
+{
+    using type =  IntList<Number, Nums...>;
+};
+
+static_assert(std::is_same<IntList<1,2>, PushFront<IntList<2>, 1>::type>::value);
+
 template <class V>
 struct Size
 {};
@@ -230,7 +242,45 @@ public:
 
 static_assert(Average<IntList<2,2,3,4,4>>::value == 3);
 
+template <int ValueToRemove, typename List>
+struct RemoveValue;
+
+template <int ValueToRemove, int ...Ints>
+struct RemoveValueImpl;
+
+template <int ValueToRemove, int Head, int ...Tail>
+struct RemoveValueImpl<ValueToRemove, Head, Tail...>
+{
+    using listWithoutHead = RemoveValueImpl<ValueToRemove, Tail...>::type;
+
+    using type = std::conditional<(Head == ValueToRemove),
+        listWithoutHead,
+        typename PushFront<listWithoutHead, Head>::type>::type;
+};
+
+template <int ValueToRemove, int Single>
+struct RemoveValueImpl<ValueToRemove, Single>
+{
+    using type = std::conditional<(Single == ValueToRemove),
+        IntList<>,
+        IntList<Single>>::type;
+};
+
+
+template <int ValueToRemove, int ...Ints>
+struct RemoveValue<ValueToRemove, IntList<Ints...>>
+{
+    using type = RemoveValueImpl<ValueToRemove,Ints...>::type;
+};
+
+auto a = IntList<1,2,3,4,5,6,7,8>();
+auto b = RemoveValue<99,IntList<1,2,3,4,99,5,6,7,8>>::type();
+
+static_assert(std::is_same<decltype(a), decltype(b)>::value);
+
+
 int main(int argc, char* argv[])
 {
+    a = b;
     return 0;
 }
